@@ -1,6 +1,7 @@
 const net = require('net');
 const porta = 3001;
 const clientList = [];
+const nameList = [];
 
 // Criar um servidor de socket
 const server = net.createServer((socket) => {
@@ -30,6 +31,7 @@ const server = net.createServer((socket) => {
     if(index != -1) {
       if(clientList[index].name == '') {
         clientList[index].name = JSON.parse(message).name;
+        nameList.push(JSON.parse(message).name)
       }
     }
   }
@@ -40,27 +42,40 @@ const server = net.createServer((socket) => {
     setName(message);
     pushMessage(message);
   });
-  
+
   // Enviar uma mensagem para o cliente
   function pushMessage(message) {
     clientList.forEach((client) => { 
-      if(client.socket != socket && JSON.parse(message).friend == '') {
+      if(client.socket != socket && JSON.parse(message).friend == '' && JSON.parse(message).message != 'nameList') {
         client.socket.write(JSON.parse(message).name + ": " + JSON.parse(message).message);
       } else if(client.name == JSON.parse(message).friend) {
         client.socket.write(JSON.parse(message).name + ": " + JSON.parse(message).message);
+      } else if(client.socket == socket && JSON.parse(message).message == 'nameList') { 
+        const names = nameList.filter((name) => name != client.name)
+        client.socket.write(names.length > 0 ? 'Amigos no chat: ' + names.join(' - ') : 'Não hà amigos no chat!')
       }
     }) 
   }
   
+  // Enviar menssagem para o cliente
+  function pushMessageExit(message) {
+    clientList.forEach((client) => {
+      client.socket.write(message)
+    })
+  }
+
   // Lidar com a desconexão do cliente
   socket.on('close', () => {
     const index = getClient(socket);
+    const nameClient = clientList[index].name;
 
     if(index != -1) {
       clientList.splice(index, 1);
+      nameList.splice(index, 1)
     }
 
-    console.log('Conexão fechada');
+    pushMessageExit(nameClient + ' saiu do chat!')
+    console.log('Conexão fechada com ' + nameClient);
   });
 });
 

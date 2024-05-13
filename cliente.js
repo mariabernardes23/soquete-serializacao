@@ -7,7 +7,7 @@ const client = net.createConnection({
   port: 3001
 });
 
-// Guarda os dados do cliente 
+// Guarda os dados do cliente
 const person = {
   name: '',
   message: '',
@@ -20,11 +20,8 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-console.log('---CHAT---\n1 - Mensagem privada');
+console.log('---CHAT---\n1 - Lista de amigos no chat\n2 - Mandar mensagem privada');
 console.log('Digite seu nome: ');
-// Define a instrução no console
-// rl.setPrompt('Digite seu nome: ');
-// rl.prompt();
 
 function getNameFriend() {
   rl.question('Nome do destinatario: ', (input) => {
@@ -45,6 +42,12 @@ rl.on('line', (text) => {
   }
 
   if(text == 1) {
+    person.message = 'nameList'
+    pushMessage(person)
+    return;
+  }
+
+  if(text == 2) {
     getNameFriend();
     return;
   }
